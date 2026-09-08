@@ -1,120 +1,104 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
 
-# Mock In-Memory Database for Hackathon Prototype
+# In-memory product data (matches the featured produce shown on the home page)
+# price: current price from the nearest/cheapest seller among multiple listings
+# favorable: whether this is the best price available right now across sellers
+# nearest_farmer_km: distance to the closest farmer selling this item
 crops_db = [
     {
         "id": 1,
         "name": "Fresh Tomatoes",
-        "category": "vegetables",
-        "farmer": "Ramesh Kumar",
-        "farmer_id": "487-8942-12",
-        "price": 28,
-        "mandi_price": 45,
-        "qty": "120 kg",
-        "image": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400"
+        "category": "Vegetables",
+        "price": "\u20b928",
+        "unit": "kg",
+        "favorable": True,
+        "nearest_farmer_km": 1.8,
+        "image": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=600&q=80"
     },
     {
         "id": 2,
         "name": "Organic Lettuce",
-        "category": "vegetables",
-        "farmer": "Suresh Patel",
-        "farmer_id": "487-1102-88",
-        "price": 35,
-        "mandi_price": 55,
-        "qty": "45 kg",
-        "image": "https://images.unsplash.com/photo-1556801712-76c8eb07bbc9?w=400"
+        "category": "Vegetables",
+        "price": "\u20b935",
+        "unit": "head",
+        "favorable": True,
+        "nearest_farmer_km": 2.4,
+        "image": "https://images.unsplash.com/photo-1622206151226-18ca2c9d680b?w=600&q=80"
     },
     {
         "id": 3,
-        "name": "Fresh Organic Milk",
-        "category": "dairy",
-        "farmer": "Dairy FPO Meerut",
-        "farmer_id": "487-3391-04",
-        "price": 52,
-        "mandi_price": 68,
-        "qty": "80 L",
-        "image": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400"
+        "name": "Farm Fresh Eggs",
+        "category": "Dairy",
+        "price": "\u20b990",
+        "unit": "dozen",
+        "favorable": True,
+        "nearest_farmer_km": 3.1,
+        "image": "https://images.unsplash.com/photo-1518569656558-1f25e69d93d7?w=600&q=80"
     },
     {
         "id": 4,
-        "name": "Whole Wheat Grain",
-        "category": "grains",
-        "farmer": "Ramesh Kumar",
-        "farmer_id": "487-8942-12",
-        "price": 24,
-        "mandi_price": 34,
-        "qty": "500 kg",
-        "image": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400"
+        "name": "Hybrid Tomato Seeds",
+        "category": "Seeds",
+        "price": "\u20b9150",
+        "unit": "packet",
+        "favorable": True,
+        "nearest_farmer_km": 4.6,
+        "image": "https://images.unsplash.com/photo-1524598171353-e5643fdc4353?w=600&q=80"
+    },
+    {
+        "id": 5,
+        "name": "Fresh Organic Milk",
+        "category": "Dairy",
+        "price": "\u20b955",
+        "unit": "litre",
+        "favorable": True,
+        "nearest_farmer_km": 1.2,
+        "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&q=80"
+    },
+    {
+        "id": 6,
+        "name": "Seasonal Oranges",
+        "category": "Seasonal",
+        "price": "\u20b960",
+        "unit": "kg",
+        "favorable": True,
+        "nearest_farmer_km": 5.3,
+        "image": "https://images.unsplash.com/photo-1547514701-42782101795e?w=600&q=80"
+    },
+    {
+        "id": 7,
+        "name": "Fresh Blueberries",
+        "category": "Fruits",
+        "price": "\u20b9250",
+        "unit": "box",
+        "favorable": True,
+        "nearest_farmer_km": 6.7,
+        "image": "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=600&q=80"
+    },
+    {
+        "id": 8,
+        "name": "Seasonal Mangoes",
+        "category": "Seasonal",
+        "price": "\u20b980",
+        "unit": "kg",
+        "favorable": True,
+        "nearest_farmer_km": 3.9,
+        "image": "https://images.unsplash.com/photo-1591073113125-e46713c829ed?w=600&q=80"
     }
 ]
 
-orders_db = []
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# API: Get all crops
+
 @app.route('/api/crops', methods=['GET'])
 def get_crops():
     return jsonify({"status": "success", "crops": crops_db})
 
-# API: Add new crop listing by farmer
-@app.route('/api/crops', methods=['POST'])
-def add_crop():
-    data = request.get_json()
-    new_crop = {
-        "id": len(crops_db) + 1,
-        "name": data.get("name"),
-        "category": data.get("category", "vegetables"),
-        "farmer": data.get("farmer", "Sarah Jenkins"),
-        "farmer_id": "487-8942-12",
-        "price": float(data.get("price")),
-        "mandi_price": round(float(data.get("price")) * 1.4, 1),
-        "qty": f"{data.get('qty')} kg",
-        "image": data.get("image") or "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400"
-    }
-    crops_db.insert(0, new_crop)
-    return jsonify({"status": "success", "message": "Crop listed successfully!", "crop": new_crop})
-
-# API: Simulated AI Price & Demand Suggester
-@app.route('/api/ai-forecast', methods=['POST'])
-def ai_forecast():
-    data = request.get_json()
-    crop_name = data.get("crop_name", "").lower()
-    
-    # Fast deterministic rules for demo
-    if "tomato" in crop_name:
-        rec_price = 28
-        demand = "High (Monsoon deficit in regional mandis)"
-    elif "wheat" in crop_name:
-        rec_price = 25
-        demand = "Stable (Bulk procurement season active)"
-    else:
-        rec_price = 32
-        demand = "Moderate demand. Direct consumer pricing suggested."
-
-    return jsonify({
-        "status": "success",
-        "recommended_price": rec_price,
-        "demand_forecast": demand
-    })
-
-# API: Place direct order
-@app.route('/api/orders', methods=['POST'])
-def place_order():
-    data = request.get_json()
-    order = {
-        "order_id": f"ORD-2026-{len(orders_db) + 101}",
-        "crop_name": data.get("crop_name"),
-        "farmer": data.get("farmer"),
-        "amount": data.get("price"),
-        "status": "Logistics Dispatched"
-    }
-    orders_db.append(order)
-    return jsonify({"status": "success", "order": order})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
