@@ -3,21 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MarketPlace</title>
+<title>अन्नData</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     body { font-family: 'Helvetica Neue', Arial, sans-serif; overflow-x: hidden; }
     .cat-pill.active { background-color: #bfe3fb; color: #0f172a; border-color: #bfe3fb; }
-    #authModal { transition: opacity 0.3s ease; }
-    #authModalContent { transition: transform 0.3s ease; }
 </style>
 </head>
 <body class="bg-white text-slate-900 relative">
 
+    <!-- DATA LIST FOR AUTOCOMPLETE -->
+    <datalist id="cropList">
+        <option value="Onion"></option>
+        <option value="Potato"></option>
+        <option value="Tomato"></option>
+        <option value="Apple"></option>
+        <option value="Mango"></option>
+        <option value="Milk"></option>
+        <option value="Egg"></option>
+        <option value="Banana"></option>
+    </datalist>
+
     <!-- === SIDEBAR MENU === -->
     <div id="menuOverlay" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity opacity-0 duration-300 cursor-pointer"></div>
-
     <div id="sideMenu" class="fixed top-0 left-0 h-full w-[85%] max-w-sm bg-white z-50 transform -translate-x-full transition-transform duration-300 overflow-y-auto flex flex-col shadow-2xl">
         <div class="bg-lime-200 text-stone-900 px-6 py-5 flex justify-between items-center border-b border-lime-300">
             <div class="font-bold text-xl flex items-center gap-3">
@@ -60,76 +69,134 @@
     </div>
     <!-- === END SIDEBAR === -->
 
-
-    <!-- === AUTHENTICATION MODAL === -->
-    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0">
-        <!-- The background that closes the window when clicked -->
-        <div id="authOverlay" class="absolute inset-0 bg-black/60 cursor-pointer"></div>
+    <!-- === SELL ITEM MODAL === -->
+    <div id="sellModal" class="fixed inset-0 z-[110] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/60 cursor-pointer" onclick="closeSellModal()"></div>
         
-        <div id="authModalContent" class="relative z-10 w-[450px] max-w-[95%] bg-white rounded-3xl overflow-hidden shadow-2xl transform scale-95">
-            <button id="closeAuthBtn" class="absolute top-4 right-5 text-stone-500 hover:text-stone-900 z-10 text-xl"><i class="fa-solid fa-xmark"></i></button>
+        <div class="relative z-10 w-[500px] max-w-[95%] bg-white rounded-3xl overflow-hidden shadow-2xl p-8">
+            <button onclick="closeSellModal()" class="absolute top-4 right-5 text-stone-500 hover:text-stone-900 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            
+            <h2 class="text-2xl font-extrabold text-stone-900 mb-6 border-b border-stone-200 pb-2">List a New Item</h2>
 
-            <!-- GREEN SECTION -->
-            <div id="buyerSection" class="bg-[#f4f7ed] p-8 pb-10">
-                <h2 id="buyerTitle" class="text-3xl font-extrabold italic text-stone-900 mb-6 tracking-tight">Login</h2>
-                
-                <div class="flex gap-4 mb-6 border-b border-stone-200 pb-2">
-                    <button id="tabLogin" class="font-bold text-stone-900 border-b-2 border-stone-900 pb-1">Login</button>
-                    <button id="tabSignup" class="font-bold text-stone-400 hover:text-stone-700 pb-1">Sign Up</button>
+            <!-- STEP 1: Details -->
+            <div id="sellStep1" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Category:</label>
+                    <select id="sellCategory" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Seeds">Seeds</option>
+                        <option value="Seasonal">Seasonal</option>
+                    </select>
                 </div>
 
-                <form id="buyerForm" class="space-y-4">
-                    <div id="signupFields" class="hidden space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-stone-700 mb-1">Name:</label>
-                            <input type="text" id="b_name" placeholder="John Doe" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-stone-700 mb-1">Address:</label>
-                            <input type="text" id="b_address" placeholder="123 Main St" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 mb-1">Sub-Category (Crop Name):</label>
+                    <input type="text" id="sellSubCategory" list="cropList" placeholder="e.g. Onion, Milk, Banana" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Cost (<span id="unitLabel">per kg</span>):</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-stone-500">₹</span>
+                            <input type="number" id="sellCost" placeholder="30" class="w-full border border-stone-300 rounded-md pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Total Stock:</label>
+                        <input type="number" id="sellStock" placeholder="50" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                </div>
 
+                <!-- PRICING LOGIC EXPLANATION -->
+                <div class="mt-4 pt-4 border-t border-stone-100">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="sellDelivery" class="w-5 h-5 text-emerald-500 rounded focus:ring-emerald-400">
+                        <span class="text-sm font-bold text-stone-700">I will provide Self Delivery</span>
+                    </label>
+                    <p class="text-xs text-stone-500 mt-2 ml-8">If unchecked: ₹15 fee (₹5 platform + ₹10 delivery). If checked: Only ₹5 fee.</p>
+                </div>
+
+                <button onclick="goToSellStep2()" class="w-full bg-stone-900 hover:bg-black text-white font-bold px-6 py-3 rounded-full mt-6 transition">
+                    Next Step <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <!-- STEP 2: Confirmation -->
+            <div id="sellStep2" class="hidden flex flex-col items-center py-4">
+                <i class="fa-solid fa-tags text-4xl text-emerald-500 mb-4"></i>
+                <h3 class="text-xl font-bold text-stone-900">Confirm Pricing</h3>
+                
+                <div class="bg-stone-50 w-full p-4 rounded-xl mt-4 border border-stone-200 space-y-2 text-sm">
+                    <div class="flex justify-between text-stone-600">
+                        <span>Base Price:</span>
+                        <span id="confirmBasePrice" class="font-bold">₹0</span>
+                    </div>
+                    
+                    <div id="confirmDeliveryRow" class="space-y-2"></div>
+                    
+                    <div class="border-t border-stone-300 pt-2 mt-2 flex justify-between text-lg text-stone-900 font-extrabold">
+                        <span>Final Price to Buyer:</span>
+                        <span id="confirmFinalPrice">₹0</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 w-full mt-8">
+                    <button onclick="backToSellStep1()" class="flex-1 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold px-4 py-3 rounded-full transition">Back</button>
+                    <button onclick="submitSellItem()" class="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-3 rounded-full transition shadow-lg shadow-emerald-200">Sell Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- === END SELL ITEM MODAL === -->
+
+    <!-- === AUTHENTICATION MODAL === -->
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/60 cursor-pointer" onclick="closeAuthModal()"></div>
+        <div id="authModalContent" class="relative z-10 w-[450px] max-w-[95%] bg-white rounded-3xl overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-5 text-stone-500 hover:text-stone-900 z-10 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div id="buyerSection" class="bg-[#f4f7ed] p-8 pb-10">
+                <h2 class="text-3xl font-extrabold italic text-stone-900 mb-6 tracking-tight">Login</h2>
+                <form class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-1">Email:</label>
-                        <input type="email" id="b_email" placeholder="Enter your email address" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                        <input type="email" placeholder="Enter your email address" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-1">Password:</label>
-                        <input type="password" id="b_pass" placeholder="••••••••" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                        <input type="password" placeholder="••••••••" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm outline-none">
                     </div>
-                    
-                    <button type="button" id="buyerSubmitBtn" class="bg-lime-200 hover:bg-lime-300 border border-lime-400 text-stone-900 font-bold px-6 py-2 rounded-full mt-4 transition text-sm">
-                        Login
-                    </button>
+                    <button type="button" class="bg-lime-200 hover:bg-lime-300 border border-lime-400 text-stone-900 font-bold px-6 py-2 rounded-full mt-4 transition text-sm">Login</button>
                 </form>
             </div>
 
-            <!-- Expand Seller Button -->
-            <button id="expandSellerBtn" class="w-full bg-white text-xs font-bold text-stone-500 py-3 border-y border-stone-200 hover:bg-stone-50 transition">
+            <button id="expandSellerBtn" onclick="showSellerTab()" class="w-full bg-white text-xs font-bold text-stone-500 py-3 border-y border-stone-200 hover:bg-stone-50 transition">
                 ARE YOU A FARMER? BECOME A SELLER ⌄
             </button>
 
-            <!-- BLUE SECTION -->
+            <!-- SELLER SECTION -->
             <div id="sellerSection" class="bg-[#f0f4fa] p-8 hidden">
                 <h3 class="text-sm font-extrabold text-stone-900 mb-5 tracking-wide">BECOME A SELLER</h3>
                 <div class="space-y-4">
                     <div class="flex items-end gap-3">
                         <div class="flex-1">
                             <label class="block text-xs font-bold text-stone-700 mb-1 uppercase">Kisaan ID</label>
-                            <input type="text" id="s_kisaan_id" placeholder="Enter Kisaan Card ID" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <input type="text" id="s_kisaan_id" placeholder="Enter Kisaan Card ID (e.g. 12345)" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
                         </div>
-                        <button id="getOtpBtn" class="bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold px-4 py-2 rounded-md text-xs transition">
+                        <button type="button" id="getOtpBtn" onclick="requestOTP()" class="bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold px-4 py-2 rounded-md text-xs transition">
                             GET OTP
                         </button>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-1 uppercase">OTP</label>
-                        <input type="text" id="s_otp" placeholder="Enter 6-digit OTP code" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" disabled>
+                        <input type="text" id="s_otp" placeholder="Enter 6-digit OTP code" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none" disabled>
                     </div>
 
-                    <button id="sellerLoginBtn" class="bg-[#bfe3fb] hover:bg-[#a6d8fa] border border-[#90ccf4] text-stone-900 font-bold px-6 py-2 rounded-full mt-4 transition text-sm">
+                    <button type="button" onclick="verifyOTP()" class="bg-[#bfe3fb] hover:bg-[#a6d8fa] border border-[#90ccf4] text-stone-900 font-bold px-6 py-2 rounded-full mt-4 transition text-sm">
                         Login
                     </button>
                 </div>
@@ -138,31 +205,24 @@
     </div>
     <!-- === END MODAL === -->
 
-
     <!-- Header -->
     <header class="border-b border-stone-200">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
             <div class="flex items-center gap-4 shrink-0">
                 <i id="menuBtn" class="fa-solid fa-bars text-lg text-stone-700 cursor-pointer hover:text-emerald-600 transition"></i>
-                <span class="text-xl font-bold tracking-tight">MarketPlace</span>
+                <a href="/" class="text-xl font-bold tracking-tight text-stone-900 no-underline">अन्नData</a>
             </div>
-
             <div class="flex-1 max-w-2xl hidden md:block">
-                <div class="relative">
-                    <button id="searchBtn" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-emerald-500 transition text-sm z-10">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                    <input type="text" id="searchInput" placeholder="Search fresh products, local dairy, seeds and more..."
-                        class="w-full bg-stone-50 border border-stone-200 rounded-full pl-11 pr-4 py-2.5 text-sm text-stone-600 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-300">
-                </div>
+                <form action="/search" method="GET" class="relative">
+                    <button type="submit" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-emerald-500 transition text-sm z-10"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <input type="text" name="q" placeholder="Search products..." class="w-full bg-stone-50 border border-stone-200 rounded-full pl-11 pr-4 py-2.5 text-sm outline-none">
+                </form>
             </div>
-
             <div class="flex items-center gap-5 shrink-0 ml-auto">
-                <button id="sellItemHeaderBtn" class="flex items-center gap-1.5 bg-lime-200 hover:bg-lime-300 transition rounded-full px-5 py-2 text-sm font-semibold text-stone-900">
+                <button onclick="handleSellClick()" class="flex items-center gap-1.5 bg-lime-200 hover:bg-lime-300 transition rounded-full px-5 py-2 text-sm font-semibold text-stone-900">
                     <i class="fa-solid fa-plus text-xs"></i> Sell Item
                 </button>
-                <img id="profileHeaderBtn" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&q=80"
-                    class="h-10 w-10 rounded-full object-cover border border-stone-200 cursor-pointer hover:ring-2 hover:ring-lime-400 transition">
+                <img onclick="openAuthModal('buyer')" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&q=80" class="h-10 w-10 rounded-full object-cover border border-stone-200 cursor-pointer hover:ring-2 hover:ring-lime-400">
             </div>
         </div>
     </header>
@@ -171,9 +231,7 @@
     <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
         <section class="bg-lime-100 rounded-3xl px-10 py-10">
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">KHET SE GHAR TAK</h1>
-            <p class="mt-3 text-stone-700 max-w-2xl leading-relaxed">
-                Support local growers and artisans. Access the finest seasonal vegetables, farm-fresh dairy, seeds, and fruits delivered straight to you.
-            </p>
+            <p class="mt-3 text-stone-700 max-w-2xl leading-relaxed">Support local growers. Access the finest seasonal produce straight to you.</p>
         </section>
 
         <section>
@@ -186,125 +244,69 @@
                 <button data-cat="Seasonal" class="cat-pill px-5 py-2 rounded-full text-sm font-medium bg-white border border-stone-300 text-stone-700 transition">Seasonal</button>
             </div>
         </section>
-        
+
         <section>
+            <h3 class="text-lg font-bold mb-3 mt-8">Featured Produce</h3>
             <div id="cropGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </section>
     </main>
 
-    <!-- UNIFIED SCRIPT: This guarantees everything works immediately without cache issues -->
+    <!-- JavaScript Logic -->
     <script>
-        // 1. STATE & CONSTANTS
+        // GLOBAL STATE
+        let currentUser = null; 
+        let globalUnit = 'kg';
+        let calculatedPrice = 0;
         let allCrops = [];
         let currentCategory = 'Vegetables';
-        let searchQuery = '';
+        
         const CATEGORY_STYLES = {
-            'Vegetables': 'bg-lime-100 text-lime-800', 'Fruits': 'bg-rose-100 text-rose-700',
-            'Dairy': 'bg-sky-100 text-sky-700', 'Seeds': 'bg-violet-100 text-violet-700',
+            'Vegetables': 'bg-lime-100 text-lime-800',
+            'Fruits': 'bg-rose-100 text-rose-700',
+            'Dairy': 'bg-sky-100 text-sky-700',
+            'Seeds': 'bg-violet-100 text-violet-700',
             'Seasonal': 'bg-emerald-100 text-emerald-700'
         };
 
-        // 2. SEARCH & RENDER CROPS
-        async function fetchCrops() {
-            const response = await fetch('/api/crops');
-            const data = await response.json();
-            allCrops = data.crops;
-            renderCrops();
-        }
-
-        function renderCrops() {
-            const grid = document.getElementById('cropGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            // Search filtering logic
-            const filtered = allCrops.filter(c => {
-                if (searchQuery !== '') return c.name.toLowerCase().includes(searchQuery.toLowerCase());
-                return c.category === currentCategory;
-            });
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `<p class="col-span-full py-10 text-center text-stone-500 font-medium text-lg">No products found.</p>`;
-                return;
-            }
-
-            filtered.forEach(crop => {
-                const tagStyle = CATEGORY_STYLES[crop.category] || 'bg-stone-100 text-stone-700';
-                const favorableBadge = crop.favorable 
-                    ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wide">Favorable</span>` : '';
-                
-                const cardHTML = `
-                <a href="/product/${crop.id}" class="block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:shadow-md transition cursor-pointer">
-                    <img src="${crop.image}" class="h-44 w-full object-cover" alt="${crop.name}">
-                    <div class="p-4">
-                        <span class="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded ${tagStyle}">${crop.category}</span>
-                        <h4 class="font-bold text-stone-800 mt-2">${crop.name}</h4>
-                        <div class="flex items-center mt-1">
-                            <p class="text-sm font-medium text-stone-700">${crop.price} / ${crop.unit}</p>
-                            ${favorableBadge}
-                        </div>
-                    </div>
-                </a>`;
-                grid.innerHTML += cardHTML;
-            });
-        }
-
-        // Search Input listeners
-        const searchInput = document.getElementById('searchInput');
-        function executeSearch() {
-            if(!searchInput) return;
-            searchQuery = searchInput.value.trim();
-            if (searchQuery !== '') {
-                document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-                currentCategory = ''; 
-            }
-            renderCrops();
-        }
-        if (searchInput) {
-            searchInput.addEventListener('input', executeSearch); // Live search
-            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') executeSearch(); });
-        }
-        document.getElementById('searchBtn')?.addEventListener('click', executeSearch);
-
-        // Category clicks
-        document.getElementById('categoryBar')?.addEventListener('click', (e) => {
-            const btn = e.target.closest('.cat-pill');
-            if (!btn) return;
-            if (searchInput) searchInput.value = '';
-            searchQuery = '';
-            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCategory = btn.dataset.cat;
-            renderCrops();
-        });
-
-
-        // 3. SIDEBAR LOGIC
+        // 1. Sidebar Logic
         const sideMenu = document.getElementById('sideMenu');
         const menuOverlay = document.getElementById('menuOverlay');
         
         function openMenu() {
-            menuOverlay.classList.remove('hidden');
-            setTimeout(() => menuOverlay.classList.remove('opacity-0'), 10);
-            sideMenu.classList.remove('-translate-x-full');
+            if(menuOverlay) {
+                menuOverlay.classList.remove('hidden');
+                setTimeout(() => menuOverlay.classList.remove('opacity-0'), 10);
+            }
+            if(sideMenu) sideMenu.classList.remove('-translate-x-full');
             document.body.style.overflow = 'hidden'; 
         }
+        
         function closeMenu() {
-            menuOverlay.classList.add('opacity-0');
-            sideMenu.classList.add('-translate-x-full');
+            if(menuOverlay) menuOverlay.classList.add('opacity-0');
+            if(sideMenu) sideMenu.classList.add('-translate-x-full');
             document.body.style.overflow = '';
-            setTimeout(() => menuOverlay.classList.add('hidden'), 300);
+            setTimeout(() => {
+                if(menuOverlay) menuOverlay.classList.add('hidden');
+            }, 300);
         }
+
+        const menuBtn = document.getElementById('menuBtn');
+        if(menuBtn) menuBtn.addEventListener('click', openMenu);
         
-        document.getElementById('menuBtn')?.addEventListener('click', openMenu);
-        document.getElementById('closeMenuBtn')?.addEventListener('click', closeMenu);
-        if(menuOverlay) menuOverlay.addEventListener('click', closeMenu); // Close on outside click
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeMenu);
         
-        document.getElementById('historyToggleBtn')?.addEventListener('click', () => {
-            document.getElementById('historySubMenu')?.classList.toggle('hidden');
-            document.getElementById('historyIcon')?.classList.toggle('rotate-180');
-        });
+        if(menuOverlay) menuOverlay.addEventListener('click', closeMenu); 
+        
+        const historyToggleBtn = document.getElementById('historyToggleBtn');
+        if(historyToggleBtn) {
+            historyToggleBtn.addEventListener('click', () => {
+                const subMenu = document.getElementById('historySubMenu');
+                const icon = document.getElementById('historyIcon');
+                if(subMenu) subMenu.classList.toggle('hidden');
+                if(icon) icon.classList.toggle('rotate-180');
+            });
+        }
 
         document.querySelectorAll('.side-cat-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -315,109 +317,253 @@
             });
         });
 
-
-        // 4. AUTH MODAL LOGIC
-        const authModal = document.getElementById('authModal');
-        const authContent = document.getElementById('authModalContent');
-        const authOverlay = document.getElementById('authOverlay');
-        const buyerSection = document.getElementById('buyerSection');
-        const sellerSection = document.getElementById('sellerSection');
-        const expandSellerBtn = document.getElementById('expandSellerBtn');
+        // 2. Fetch and Render Products (with cache-busting!)
+        async function fetchCrops() {
+            try {
+                // The ?t= prevents the browser from loading old cached data
+                const res = await fetch('/api/crops?t=' + new Date().getTime());
+                const data = await res.json();
+                allCrops = data.crops;
+                renderCrops();
+            } catch (err) { console.error("Fetch error:", err); }
+        }
         
+        function renderCrops() {
+            const grid = document.getElementById('cropGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            
+            const filtered = allCrops.filter(c => c.category === currentCategory);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="col-span-full py-10 text-center text-stone-500 font-medium text-lg">No products found in this category.</p>';
+                return;
+            }
+
+            filtered.forEach(crop => {
+                const tagStyle = CATEGORY_STYLES[crop.category] || 'bg-stone-100 text-stone-700';
+                const isFav = crop.favorable ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wide">Favorable</span>` : '';
+                grid.innerHTML += `
+                <a href="/product/${crop.id}" class="block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:shadow-md transition">
+                    <img src="${crop.image}" class="h-44 w-full object-cover">
+                    <div class="p-4">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded ${tagStyle}">${crop.category}</span>
+                        <h4 class="font-bold text-stone-800 mt-2">${crop.name}</h4>
+                        <div class="flex items-center mt-1">
+                            <p class="text-sm font-medium text-stone-700">${crop.price} / ${crop.unit}</p>
+                            ${isFav}
+                        </div>
+                        <p class="text-xs text-stone-500 mt-3 font-medium border-t border-stone-100 pt-2"><i class="fa-solid fa-shop mr-1 text-emerald-600"></i> Seller: <span class="text-stone-800">${crop.seller_name}</span></p>
+                    </div>
+                </a>`;
+            });
+        }
+
+        const categoryBar = document.getElementById('categoryBar');
+        if(categoryBar) {
+            categoryBar.addEventListener('click', (e) => {
+                const btn = e.target.closest('.cat-pill');
+                if (!btn) return;
+                document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.cat;
+                renderCrops();
+            });
+        }
+
+        // 3. AUTH & MODALS
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/auth/status');
+                const data = await res.json();
+                if(data.logged_in) currentUser = data;
+            } catch(e) {}
+        }
+        checkAuth();
+
         function openAuthModal(mode) {
-            authModal.classList.remove('hidden');
-            setTimeout(() => {
-                authModal.classList.remove('opacity-0');
-                if(authContent) authContent.classList.remove('scale-95');
-            }, 10);
-            if(mode === 'buyer') {
-                buyerSection?.classList.remove('hidden');
-                expandSellerBtn?.classList.remove('hidden');
-                sellerSection?.classList.add('hidden');
-            } else if(mode === 'seller') {
-                buyerSection?.classList.add('hidden');
-                expandSellerBtn?.classList.add('hidden');
-                sellerSection?.classList.remove('hidden');
+            const m = document.getElementById('authModal');
+            if(m) {
+                m.classList.remove('hidden');
+                setTimeout(() => m.classList.remove('opacity-0'), 10);
             }
+            if(mode === 'seller') showSellerTab();
         }
-
-        function closeAuthModal() {
-            authModal.classList.add('opacity-0');
-            if(authContent) authContent.classList.add('scale-95');
-            setTimeout(() => authModal.classList.add('hidden'), 300);
-        }
-
-        document.getElementById('profileHeaderBtn')?.addEventListener('click', () => openAuthModal('buyer'));
-        document.getElementById('sellItemHeaderBtn')?.addEventListener('click', () => openAuthModal('seller'));
-        document.getElementById('closeAuthBtn')?.addEventListener('click', closeAuthModal);
         
-        // INSTANT CLOSE: When the dark overlay is clicked
-        if(authOverlay) authOverlay.addEventListener('click', closeAuthModal);
-
-        expandSellerBtn?.addEventListener('click', () => {
-            sellerSection?.classList.remove('hidden');
-            expandSellerBtn.classList.add('hidden');
-        });
-
-        // Toggle Signup/Login
-        let isSignup = false;
-        document.getElementById('tabSignup')?.addEventListener('click', (e) => {
-            isSignup = true;
-            document.getElementById('signupFields')?.classList.remove('hidden');
-            document.getElementById('buyerTitle').innerText = "Create Account";
-            document.getElementById('buyerSubmitBtn').innerText = "Sign Up";
-            e.target.classList.add('text-stone-900', 'border-b-2', 'border-stone-900');
-            e.target.classList.remove('text-stone-400');
-            document.getElementById('tabLogin')?.classList.add('text-stone-400', 'border-b-2');
-            document.getElementById('tabLogin')?.classList.remove('text-stone-900', 'border-stone-900');
-        });
-
-        document.getElementById('tabLogin')?.addEventListener('click', (e) => {
-            isSignup = false;
-            document.getElementById('signupFields')?.classList.add('hidden');
-            document.getElementById('buyerTitle').innerText = "Login";
-            document.getElementById('buyerSubmitBtn').innerText = "Login";
-            e.target.classList.add('text-stone-900', 'border-b-2', 'border-stone-900');
-            e.target.classList.remove('text-stone-400');
-            document.getElementById('tabSignup')?.classList.add('text-stone-400');
-            document.getElementById('tabSignup')?.classList.remove('text-stone-900', 'border-b-2', 'border-stone-900');
-        });
-
-        // Backend API Requests
-        document.getElementById('buyerSubmitBtn')?.addEventListener('click', async () => {
-            const email = document.getElementById('b_email').value;
-            const password = document.getElementById('b_pass').value;
-            let url = '/api/auth/login_buyer';
-            let body = { email, password };
-            if(isSignup) {
-                url = '/api/auth/register_buyer';
-                body.name = document.getElementById('b_name').value;
-                body.address = document.getElementById('b_address').value;
+        function closeAuthModal() {
+            const m = document.getElementById('authModal');
+            if(m) {
+                m.classList.add('opacity-0');
+                setTimeout(() => m.classList.add('hidden'), 300);
             }
-            const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
-            const data = await res.json();
-            alert(data.message);
-            if(data.status === 'success') location.reload();
-        });
+        }
 
-        document.getElementById('getOtpBtn')?.addEventListener('click', async () => {
-            const kisaan_id = document.getElementById('s_kisaan_id').value;
-            const res = await fetch('/api/auth/generate_otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ kisaan_id }) });
-            const data = await res.json();
-            alert(data.message);
-            if(data.status === 'success') document.getElementById('s_otp').disabled = false;
-        });
+        function showSellerTab() {
+            const buyer = document.getElementById('buyerSection');
+            const expand = document.getElementById('expandSellerBtn');
+            const seller = document.getElementById('sellerSection');
+            if(buyer) buyer.classList.add('hidden');
+            if(expand) expand.classList.add('hidden');
+            if(seller) seller.classList.remove('hidden');
+        }
 
-        document.getElementById('sellerLoginBtn')?.addEventListener('click', async () => {
+        async function requestOTP() {
+            const kisaanId = document.getElementById('s_kisaan_id').value;
+            if(!kisaanId) return alert("Please enter Kisaan ID");
+            
+            const btn = document.getElementById('getOtpBtn');
+            btn.innerText = "SENDING...";
+            
+            try {
+                const res = await fetch('/api/auth/generate_otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ kisaan_id: kisaanId })
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    btn.innerText = "SENT!";
+                    btn.classList.add('text-emerald-600', 'border-emerald-300');
+                    document.getElementById('s_otp').disabled = false;
+                    document.getElementById('s_otp').focus();
+                    alert("Check your terminal (VS Code) for the OTP!");
+                } else {
+                    btn.innerText = "GET OTP";
+                    alert(data.message);
+                }
+            } catch (err) {
+                btn.innerText = "GET OTP";
+                console.error(err);
+            }
+        }
+
+        async function verifyOTP() {
             const kisaan_id = document.getElementById('s_kisaan_id').value;
             const otp = document.getElementById('s_otp').value;
-            const res = await fetch('/api/auth/verify_seller', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ kisaan_id, otp }) });
-            const data = await res.json();
-            alert(data.message);
-            if(data.status === 'success') location.reload();
-        });
+            try {
+                const res = await fetch('/api/auth/verify_seller', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ kisaan_id, otp })
+                });
+                const data = await res.json();
+                if(data.status === 'success') location.reload();
+                else alert(data.message);
+            } catch(e) {}
+        }
 
-        // Run on load
+        // 4. SELL ITEM SMART LOGIC & NEW PRICING
+        function handleSellClick() {
+            if(currentUser && currentUser.is_seller) {
+                const m = document.getElementById('sellModal');
+                if(m) {
+                    m.classList.remove('hidden');
+                    setTimeout(() => m.classList.remove('opacity-0'), 10);
+                }
+            } else {
+                openAuthModal('seller');
+            }
+        }
+
+        function closeSellModal() {
+            const m = document.getElementById('sellModal');
+            if(m) {
+                m.classList.add('opacity-0');
+                setTimeout(() => m.classList.add('hidden'), 300);
+            }
+            backToSellStep1(); 
+        }
+
+        const subCatInput = document.getElementById('sellSubCategory');
+        if(subCatInput) {
+            subCatInput.addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase();
+                const unitLabel = document.getElementById('unitLabel');
+                if(['milk', 'ghee', 'oil'].includes(val)) globalUnit = 'litre';
+                else if(['egg', 'eggs', 'banana', 'bananas'].includes(val)) globalUnit = 'dozen';
+                else globalUnit = 'kg'; 
+                if(unitLabel) unitLabel.innerText = 'per ' + globalUnit;
+            });
+        }
+
+        function goToSellStep2() {
+            const costInput = document.getElementById('sellCost');
+            const subCat = document.getElementById('sellSubCategory');
+            if(!costInput || !subCat) return;
+
+            const cost = parseFloat(costInput.value);
+            const isSelfDelivery = document.getElementById('sellDelivery').checked;
+            
+            if(!cost) return alert("Please enter the cost.");
+            if(!subCat.value) return alert("Please enter a crop name.");
+            
+            let feeHtml = '';
+
+            if(isSelfDelivery) {
+                calculatedPrice = cost + 5;
+                feeHtml = `
+                    <div class="flex justify-between text-stone-600">
+                        <span>Self Delivery Fee:</span>
+                        <span class="font-bold text-emerald-600">+₹5</span>
+                    </div>
+                `;
+            } else {
+                calculatedPrice = cost + 15;
+                feeHtml = `
+                    <div class="flex justify-between text-stone-600">
+                        <span>Platform Fee:</span>
+                        <span class="font-bold text-emerald-600">+₹5</span>
+                    </div>
+                    <div class="flex justify-between text-stone-600">
+                        <span>Platform Delivery:</span>
+                        <span class="font-bold text-emerald-600">+₹10</span>
+                    </div>
+                `;
+            }
+
+            document.getElementById('confirmBasePrice').innerText = `₹${cost} / ${globalUnit}`;
+            document.getElementById('confirmFinalPrice').innerText = `₹${calculatedPrice} / ${globalUnit}`;
+            document.getElementById('confirmDeliveryRow').innerHTML = feeHtml;
+
+            document.getElementById('sellStep1').classList.add('hidden');
+            document.getElementById('sellStep2').classList.remove('hidden');
+        }
+
+        function backToSellStep1() {
+            const s2 = document.getElementById('sellStep2');
+            const s1 = document.getElementById('sellStep1');
+            if(s2) s2.classList.add('hidden');
+            if(s1) s1.classList.remove('hidden');
+        }
+
+        async function submitSellItem() {
+            const payload = {
+                category: document.getElementById('sellCategory').value,
+                sub_category: document.getElementById('sellSubCategory').value,
+                unit: globalUnit,
+                stock: document.getElementById('sellStock').value || 0,
+                self_delivery: document.getElementById('sellDelivery').checked,
+                final_price: calculatedPrice
+            };
+
+            try {
+                const res = await fetch('/api/sell_item', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                alert(data.message);
+                if(data.status === 'success') {
+                    closeSellModal();
+                    fetchCrops(); 
+                }
+            } catch(e) { console.error(e); }
+        }
+        
+        // Start the app!
         fetchCrops();
     </script>
 </body>
