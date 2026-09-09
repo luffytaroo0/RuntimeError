@@ -7,43 +7,168 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; overflow-x: hidden; }
     .cat-pill.active { background-color: #bfe3fb; color: #0f172a; border-color: #bfe3fb; }
+    #authModal { transition: opacity 0.3s ease; }
+    #authModalContent { transition: transform 0.3s ease; }
 </style>
 </head>
-<body class="bg-white text-slate-900">
+<body class="bg-white text-slate-900 relative">
+
+    <!-- === SIDEBAR MENU === -->
+    <div id="menuOverlay" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity opacity-0 duration-300 cursor-pointer"></div>
+
+    <div id="sideMenu" class="fixed top-0 left-0 h-full w-[85%] max-w-sm bg-white z-50 transform -translate-x-full transition-transform duration-300 overflow-y-auto flex flex-col shadow-2xl">
+        <div class="bg-lime-200 text-stone-900 px-6 py-5 flex justify-between items-center border-b border-lime-300">
+            <div class="font-bold text-xl flex items-center gap-3">
+                <i class="fa-solid fa-bars text-lg"></i>
+                <span class="tracking-tight">Menu</span>
+            </div>
+            <button id="closeMenuBtn" class="text-stone-700 hover:text-stone-900 transition text-2xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="py-4 border-b border-stone-200">
+            <h3 class="px-6 py-2 font-extrabold text-lg text-stone-900">Shop by Category</h3>
+            <ul class="flex flex-col mt-1">
+                <li><button data-cat="Vegetables" class="side-cat-btn w-full text-left px-6 py-3.5 hover:bg-stone-100 flex justify-between items-center text-stone-700 font-medium transition">Vegetables <i class="fa-solid fa-chevron-right text-xs text-stone-400"></i></button></li>
+                <li><button data-cat="Fruits" class="side-cat-btn w-full text-left px-6 py-3.5 hover:bg-stone-100 flex justify-between items-center text-stone-700 font-medium transition">Fruits <i class="fa-solid fa-chevron-right text-xs text-stone-400"></i></button></li>
+                <li><button data-cat="Dairy" class="side-cat-btn w-full text-left px-6 py-3.5 hover:bg-stone-100 flex justify-between items-center text-stone-700 font-medium transition">Dairy <i class="fa-solid fa-chevron-right text-xs text-stone-400"></i></button></li>
+                <li><button data-cat="Seeds" class="side-cat-btn w-full text-left px-6 py-3.5 hover:bg-stone-100 flex justify-between items-center text-stone-700 font-medium transition">Seeds <i class="fa-solid fa-chevron-right text-xs text-stone-400"></i></button></li>
+                <li><button data-cat="Seasonal" class="side-cat-btn w-full text-left px-6 py-3.5 hover:bg-stone-100 flex justify-between items-center text-stone-700 font-medium transition">Seasonal <i class="fa-solid fa-chevron-right text-xs text-stone-400"></i></button></li>
+            </ul>
+        </div>
+
+        <div class="py-4 mb-8">
+            <h3 class="px-6 py-2 font-extrabold text-lg text-stone-900">Help and Security</h3>
+            <ul class="flex flex-col mt-1">
+                <li><a href="#" class="block px-6 py-3.5 hover:bg-stone-100 text-stone-700 font-medium transition">Account</a></li>
+                <li>
+                    <button id="historyToggleBtn" class="w-full text-left px-6 py-3.5 hover:bg-stone-100 flex justify-between items-center text-stone-700 font-medium transition">
+                        History <i id="historyIcon" class="fa-solid fa-chevron-down text-xs text-stone-400 transition-transform duration-300"></i>
+                    </button>
+                    <ul id="historySubMenu" class="hidden bg-stone-50 flex flex-col border-y border-stone-200 py-1">
+                        <li><a href="#" class="block pl-10 pr-6 py-3 hover:bg-stone-200 text-stone-600 text-sm font-medium transition">Buying History</a></li>
+                        <li><a href="#" class="block pl-10 pr-6 py-3 hover:bg-stone-200 text-stone-600 text-sm font-medium transition">Selling History</a></li>
+                    </ul>
+                </li>
+                <li><a href="#" class="block px-6 py-3.5 hover:bg-stone-100 text-stone-700 font-medium transition">Contact Us</a></li>
+                <li><a href="#" class="block px-6 py-3.5 hover:bg-stone-100 text-stone-700 font-medium transition">Sign In</a></li>
+            </ul>
+        </div>
+    </div>
+    <!-- === END SIDEBAR === -->
+
+
+    <!-- === AUTHENTICATION MODAL === -->
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0">
+        <!-- The background that closes the window when clicked -->
+        <div id="authOverlay" class="absolute inset-0 bg-black/60 cursor-pointer"></div>
+        
+        <div id="authModalContent" class="relative z-10 w-[450px] max-w-[95%] bg-white rounded-3xl overflow-hidden shadow-2xl transform scale-95">
+            <button id="closeAuthBtn" class="absolute top-4 right-5 text-stone-500 hover:text-stone-900 z-10 text-xl"><i class="fa-solid fa-xmark"></i></button>
+
+            <!-- GREEN SECTION -->
+            <div id="buyerSection" class="bg-[#f4f7ed] p-8 pb-10">
+                <h2 id="buyerTitle" class="text-3xl font-extrabold italic text-stone-900 mb-6 tracking-tight">Login</h2>
+                
+                <div class="flex gap-4 mb-6 border-b border-stone-200 pb-2">
+                    <button id="tabLogin" class="font-bold text-stone-900 border-b-2 border-stone-900 pb-1">Login</button>
+                    <button id="tabSignup" class="font-bold text-stone-400 hover:text-stone-700 pb-1">Sign Up</button>
+                </div>
+
+                <form id="buyerForm" class="space-y-4">
+                    <div id="signupFields" class="hidden space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Name:</label>
+                            <input type="text" id="b_name" placeholder="John Doe" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-stone-700 mb-1">Address:</label>
+                            <input type="text" id="b_address" placeholder="123 Main St" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Email:</label>
+                        <input type="email" id="b_email" placeholder="Enter your email address" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1">Password:</label>
+                        <input type="password" id="b_pass" placeholder="••••••••" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lime-400">
+                    </div>
+                    
+                    <button type="button" id="buyerSubmitBtn" class="bg-lime-200 hover:bg-lime-300 border border-lime-400 text-stone-900 font-bold px-6 py-2 rounded-full mt-4 transition text-sm">
+                        Login
+                    </button>
+                </form>
+            </div>
+
+            <!-- Expand Seller Button -->
+            <button id="expandSellerBtn" class="w-full bg-white text-xs font-bold text-stone-500 py-3 border-y border-stone-200 hover:bg-stone-50 transition">
+                ARE YOU A FARMER? BECOME A SELLER ⌄
+            </button>
+
+            <!-- BLUE SECTION -->
+            <div id="sellerSection" class="bg-[#f0f4fa] p-8 hidden">
+                <h3 class="text-sm font-extrabold text-stone-900 mb-5 tracking-wide">BECOME A SELLER</h3>
+                <div class="space-y-4">
+                    <div class="flex items-end gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-stone-700 mb-1 uppercase">Kisaan ID</label>
+                            <input type="text" id="s_kisaan_id" placeholder="Enter Kisaan Card ID" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+                        <button id="getOtpBtn" class="bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 font-bold px-4 py-2 rounded-md text-xs transition">
+                            GET OTP
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 mb-1 uppercase">OTP</label>
+                        <input type="text" id="s_otp" placeholder="Enter 6-digit OTP code" class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" disabled>
+                    </div>
+
+                    <button id="sellerLoginBtn" class="bg-[#bfe3fb] hover:bg-[#a6d8fa] border border-[#90ccf4] text-stone-900 font-bold px-6 py-2 rounded-full mt-4 transition text-sm">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- === END MODAL === -->
+
 
     <!-- Header -->
     <header class="border-b border-stone-200">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center gap-6">
             <div class="flex items-center gap-4 shrink-0">
-                <i class="fa-solid fa-bars text-lg text-stone-700 cursor-pointer"></i>
+                <i id="menuBtn" class="fa-solid fa-bars text-lg text-stone-700 cursor-pointer hover:text-emerald-600 transition"></i>
                 <span class="text-xl font-bold tracking-tight">MarketPlace</span>
             </div>
 
-            <div class="flex-1 max-w-2xl">
+            <div class="flex-1 max-w-2xl hidden md:block">
                 <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
-                    <input type="text" placeholder="Search fresh products, local dairy, seeds and more..."
+                    <button id="searchBtn" class="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-emerald-500 transition text-sm z-10">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <input type="text" id="searchInput" placeholder="Search fresh products, local dairy, seeds and more..."
                         class="w-full bg-stone-50 border border-stone-200 rounded-full pl-11 pr-4 py-2.5 text-sm text-stone-600 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-300">
                 </div>
             </div>
 
-            <div class="flex items-center gap-5 shrink-0">
-                <button class="flex items-center gap-1.5 bg-lime-200 hover:bg-lime-300 transition rounded-full px-5 py-2 text-sm font-semibold text-stone-900">
+            <div class="flex items-center gap-5 shrink-0 ml-auto">
+                <button id="sellItemHeaderBtn" class="flex items-center gap-1.5 bg-lime-200 hover:bg-lime-300 transition rounded-full px-5 py-2 text-sm font-semibold text-stone-900">
                     <i class="fa-solid fa-plus text-xs"></i> Sell Item
                 </button>
-                <i class="fa-solid fa-cart-shopping text-lg text-stone-700 cursor-pointer"></i>
-                <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&q=80"
-                    class="h-10 w-10 rounded-full object-cover border border-stone-200">
+                <img id="profileHeaderBtn" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100&q=80"
+                    class="h-10 w-10 rounded-full object-cover border border-stone-200 cursor-pointer hover:ring-2 hover:ring-lime-400 transition">
             </div>
         </div>
     </header>
 
     <!-- Main -->
     <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
-
-        <!-- Hero -->
         <section class="bg-lime-100 rounded-3xl px-10 py-10">
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">KHET SE GHAR TAK</h1>
             <p class="mt-3 text-stone-700 max-w-2xl leading-relaxed">
@@ -51,7 +176,6 @@
             </p>
         </section>
 
-        <!-- Categories -->
         <section>
             <h3 class="text-lg font-bold mb-3">Browse by Category</h3>
             <div id="categoryBar" class="flex flex-wrap gap-3">
@@ -62,71 +186,239 @@
                 <button data-cat="Seasonal" class="cat-pill px-5 py-2 rounded-full text-sm font-medium bg-white border border-stone-300 text-stone-700 transition">Seasonal</button>
             </div>
         </section>
-
-        <!-- Featured Produce -->
+        
         <section>
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold">Featured Fresh Produce</h3>
-                <button class="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-700">
-                    Filter &amp; Sort <i class="fa-solid fa-sliders text-xs"></i>
-                </button>
-            </div>
-            <div id="cropGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Product cards injected by static/app.js -->
-            </div>
+            <div id="cropGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-stone-200 mt-12">
-        <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-                <span class="text-lg font-bold">MarketPlace</span>
-                <p class="mt-3 text-sm text-stone-500 max-w-xs leading-relaxed">
-                    Your neighborhood digital market. Fresh, verified, local produce sourced directly from farmers and independent sellers.
-                </p>
-            </div>
-            <div>
-                <h4 class="font-bold mb-3 text-sm">Buying</h4>
-                <ul class="space-y-2 text-sm text-stone-500">
-                    <li>Marketplace Catalog</li>
-                    <li>Organic Farmers</li>
-                    <li>Delivery Area</li>
-                    <li>Buyer Protection</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="font-bold mb-3 text-sm">Selling</h4>
-                <ul class="space-y-2 text-sm text-stone-500">
-                    <li>Become a Seller</li>
-                    <li>Sellers Guidelines</li>
-                    <li>Marketplace Fees</li>
-                    <li>Merchant Portal</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="font-bold mb-3 text-sm">Safety &amp; Support</h4>
-                <ul class="space-y-2 text-sm text-stone-500">
-                    <li>Quality Control</li>
-                    <li>Help Center</li>
-                    <li>Community Forums</li>
-                    <li>Contact Us</li>
-                </ul>
-            </div>
-        </div>
-        <div class="border-t border-stone-200">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-stone-400">
-                <span>© 2026 MarketPlace Inc. Crafted for freshness.</span>
-                <div class="flex items-center gap-4 text-sm">
-                    <i class="fa-brands fa-instagram"></i>
-                    <i class="fa-brands fa-facebook"></i>
-                    <i class="fa-brands fa-twitter"></i>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- UNIFIED SCRIPT: This guarantees everything works immediately without cache issues -->
+    <script>
+        // 1. STATE & CONSTANTS
+        let allCrops = [];
+        let currentCategory = 'Vegetables';
+        let searchQuery = '';
+        const CATEGORY_STYLES = {
+            'Vegetables': 'bg-lime-100 text-lime-800', 'Fruits': 'bg-rose-100 text-rose-700',
+            'Dairy': 'bg-sky-100 text-sky-700', 'Seeds': 'bg-violet-100 text-violet-700',
+            'Seasonal': 'bg-emerald-100 text-emerald-700'
+        };
 
-    <!-- Forced cache bypass so the new app.js loads -->
-    <script src="/static/app.js?v=2"></script>
+        // 2. SEARCH & RENDER CROPS
+        async function fetchCrops() {
+            const response = await fetch('/api/crops');
+            const data = await response.json();
+            allCrops = data.crops;
+            renderCrops();
+        }
+
+        function renderCrops() {
+            const grid = document.getElementById('cropGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            // Search filtering logic
+            const filtered = allCrops.filter(c => {
+                if (searchQuery !== '') return c.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return c.category === currentCategory;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<p class="col-span-full py-10 text-center text-stone-500 font-medium text-lg">No products found.</p>`;
+                return;
+            }
+
+            filtered.forEach(crop => {
+                const tagStyle = CATEGORY_STYLES[crop.category] || 'bg-stone-100 text-stone-700';
+                const favorableBadge = crop.favorable 
+                    ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wide">Favorable</span>` : '';
+                
+                const cardHTML = `
+                <a href="/product/${crop.id}" class="block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:shadow-md transition cursor-pointer">
+                    <img src="${crop.image}" class="h-44 w-full object-cover" alt="${crop.name}">
+                    <div class="p-4">
+                        <span class="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded ${tagStyle}">${crop.category}</span>
+                        <h4 class="font-bold text-stone-800 mt-2">${crop.name}</h4>
+                        <div class="flex items-center mt-1">
+                            <p class="text-sm font-medium text-stone-700">${crop.price} / ${crop.unit}</p>
+                            ${favorableBadge}
+                        </div>
+                    </div>
+                </a>`;
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        // Search Input listeners
+        const searchInput = document.getElementById('searchInput');
+        function executeSearch() {
+            if(!searchInput) return;
+            searchQuery = searchInput.value.trim();
+            if (searchQuery !== '') {
+                document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+                currentCategory = ''; 
+            }
+            renderCrops();
+        }
+        if (searchInput) {
+            searchInput.addEventListener('input', executeSearch); // Live search
+            searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') executeSearch(); });
+        }
+        document.getElementById('searchBtn')?.addEventListener('click', executeSearch);
+
+        // Category clicks
+        document.getElementById('categoryBar')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.cat-pill');
+            if (!btn) return;
+            if (searchInput) searchInput.value = '';
+            searchQuery = '';
+            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = btn.dataset.cat;
+            renderCrops();
+        });
+
+
+        // 3. SIDEBAR LOGIC
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        
+        function openMenu() {
+            menuOverlay.classList.remove('hidden');
+            setTimeout(() => menuOverlay.classList.remove('opacity-0'), 10);
+            sideMenu.classList.remove('-translate-x-full');
+            document.body.style.overflow = 'hidden'; 
+        }
+        function closeMenu() {
+            menuOverlay.classList.add('opacity-0');
+            sideMenu.classList.add('-translate-x-full');
+            document.body.style.overflow = '';
+            setTimeout(() => menuOverlay.classList.add('hidden'), 300);
+        }
+        
+        document.getElementById('menuBtn')?.addEventListener('click', openMenu);
+        document.getElementById('closeMenuBtn')?.addEventListener('click', closeMenu);
+        if(menuOverlay) menuOverlay.addEventListener('click', closeMenu); // Close on outside click
+        
+        document.getElementById('historyToggleBtn')?.addEventListener('click', () => {
+            document.getElementById('historySubMenu')?.classList.toggle('hidden');
+            document.getElementById('historyIcon')?.classList.toggle('rotate-180');
+        });
+
+        document.querySelectorAll('.side-cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const catName = btn.getAttribute('data-cat');
+                closeMenu();
+                const mainPill = document.querySelector(`.cat-pill[data-cat="${catName}"]`);
+                if(mainPill) mainPill.click();
+            });
+        });
+
+
+        // 4. AUTH MODAL LOGIC
+        const authModal = document.getElementById('authModal');
+        const authContent = document.getElementById('authModalContent');
+        const authOverlay = document.getElementById('authOverlay');
+        const buyerSection = document.getElementById('buyerSection');
+        const sellerSection = document.getElementById('sellerSection');
+        const expandSellerBtn = document.getElementById('expandSellerBtn');
+        
+        function openAuthModal(mode) {
+            authModal.classList.remove('hidden');
+            setTimeout(() => {
+                authModal.classList.remove('opacity-0');
+                if(authContent) authContent.classList.remove('scale-95');
+            }, 10);
+            if(mode === 'buyer') {
+                buyerSection?.classList.remove('hidden');
+                expandSellerBtn?.classList.remove('hidden');
+                sellerSection?.classList.add('hidden');
+            } else if(mode === 'seller') {
+                buyerSection?.classList.add('hidden');
+                expandSellerBtn?.classList.add('hidden');
+                sellerSection?.classList.remove('hidden');
+            }
+        }
+
+        function closeAuthModal() {
+            authModal.classList.add('opacity-0');
+            if(authContent) authContent.classList.add('scale-95');
+            setTimeout(() => authModal.classList.add('hidden'), 300);
+        }
+
+        document.getElementById('profileHeaderBtn')?.addEventListener('click', () => openAuthModal('buyer'));
+        document.getElementById('sellItemHeaderBtn')?.addEventListener('click', () => openAuthModal('seller'));
+        document.getElementById('closeAuthBtn')?.addEventListener('click', closeAuthModal);
+        
+        // INSTANT CLOSE: When the dark overlay is clicked
+        if(authOverlay) authOverlay.addEventListener('click', closeAuthModal);
+
+        expandSellerBtn?.addEventListener('click', () => {
+            sellerSection?.classList.remove('hidden');
+            expandSellerBtn.classList.add('hidden');
+        });
+
+        // Toggle Signup/Login
+        let isSignup = false;
+        document.getElementById('tabSignup')?.addEventListener('click', (e) => {
+            isSignup = true;
+            document.getElementById('signupFields')?.classList.remove('hidden');
+            document.getElementById('buyerTitle').innerText = "Create Account";
+            document.getElementById('buyerSubmitBtn').innerText = "Sign Up";
+            e.target.classList.add('text-stone-900', 'border-b-2', 'border-stone-900');
+            e.target.classList.remove('text-stone-400');
+            document.getElementById('tabLogin')?.classList.add('text-stone-400', 'border-b-2');
+            document.getElementById('tabLogin')?.classList.remove('text-stone-900', 'border-stone-900');
+        });
+
+        document.getElementById('tabLogin')?.addEventListener('click', (e) => {
+            isSignup = false;
+            document.getElementById('signupFields')?.classList.add('hidden');
+            document.getElementById('buyerTitle').innerText = "Login";
+            document.getElementById('buyerSubmitBtn').innerText = "Login";
+            e.target.classList.add('text-stone-900', 'border-b-2', 'border-stone-900');
+            e.target.classList.remove('text-stone-400');
+            document.getElementById('tabSignup')?.classList.add('text-stone-400');
+            document.getElementById('tabSignup')?.classList.remove('text-stone-900', 'border-b-2', 'border-stone-900');
+        });
+
+        // Backend API Requests
+        document.getElementById('buyerSubmitBtn')?.addEventListener('click', async () => {
+            const email = document.getElementById('b_email').value;
+            const password = document.getElementById('b_pass').value;
+            let url = '/api/auth/login_buyer';
+            let body = { email, password };
+            if(isSignup) {
+                url = '/api/auth/register_buyer';
+                body.name = document.getElementById('b_name').value;
+                body.address = document.getElementById('b_address').value;
+            }
+            const res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            const data = await res.json();
+            alert(data.message);
+            if(data.status === 'success') location.reload();
+        });
+
+        document.getElementById('getOtpBtn')?.addEventListener('click', async () => {
+            const kisaan_id = document.getElementById('s_kisaan_id').value;
+            const res = await fetch('/api/auth/generate_otp', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ kisaan_id }) });
+            const data = await res.json();
+            alert(data.message);
+            if(data.status === 'success') document.getElementById('s_otp').disabled = false;
+        });
+
+        document.getElementById('sellerLoginBtn')?.addEventListener('click', async () => {
+            const kisaan_id = document.getElementById('s_kisaan_id').value;
+            const otp = document.getElementById('s_otp').value;
+            const res = await fetch('/api/auth/verify_seller', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ kisaan_id, otp }) });
+            const data = await res.json();
+            alert(data.message);
+            if(data.status === 'success') location.reload();
+        });
+
+        // Run on load
+        fetchCrops();
+    </script>
 </body>
 </html>

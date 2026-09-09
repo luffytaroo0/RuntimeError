@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - MarketPlace</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #ffffff; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .back-btn { font-size: 1.2rem; margin-bottom: 20px; cursor: pointer; display: inline-block; text-decoration: none; color: #333; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+        .product-image { width: 100%; border-radius: 12px; object-fit: cover; max-height: 400px; }
+        .product-title { font-size: 2.8rem; margin: 20px 0 10px 0; font-weight: normal; }
+        .meta-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .price-text { font-size: 1.1rem; color: #555; }
+        .tag-favorable { background-color: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .location { color: #666; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        .location::before { content: '📍'; color: #ef4444; }
+        .filter-row { display: flex; justify-content: flex-end; margin-bottom: 20px; font-size: 1rem; color: #333; cursor: pointer; }
+        .farmer-list { display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Changed slightly to support the <a> tag layout */
+        .farmer-card { 
+            display: flex; align-items: center; justify-content: space-between;
+            background-color: #dcfce7;
+            border: 1px solid #22c55e;
+            border-radius: 12px; 
+            padding: 12px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+            text-decoration: none; /* Removes link underline */
+            color: inherit; /* Keeps text color normal */
+        }
+        .farmer-card:hover { transform: translateY(-2px); }
+        .farmer-info { display: flex; align-items: center; gap: 15px; }
+        .farmer-thumb { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .farmer-details h4 { margin: 0 0 4px 0; font-size: 1rem; font-weight: 500; }
+        .rating { color: #f59e0b; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        .rating-count { color: #666; font-size: 0.8rem; }
+        .farmer-price { font-size: 1.4rem; font-weight: 500; }
+        .farmer-unit { font-size: 0.9rem; color: #666; font-weight: normal; }
+
+        @media (max-width: 768px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">&lt; Back</a>
+        <div class="grid-layout">
+            <div class="product-info">
+                <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image">
+                <h1 class="product-title">{{ product.name }}</h1>
+                <div class="meta-row">
+                    <span class="price-text">{{ product.price }} / {{ product.unit }}</span>
+                    {% if product.favorable %}
+                        <span class="tag-favorable">Favorable</span>
+                    {% endif %}
+                </div>
+                <div class="location">{{ product.nearest_farmer_km }} km away</div>
+            </div>
+            
+            <div class="farmer-list">
+                    <!-- Ultra-safe Flask link generation -->
+                    <a href="{{ url_for('seller_listing', product_id=product.id, seller_name='Ramesh Kumar') }}" class="farmer-card">
+                        <div class="farmer-info">
+                            <img src="{{ product.image }}" alt="Farmer" class="farmer-thumb">
+                            <div class="farmer-details">
+                                <h4>Ramesh Kumar</h4>
+                                <div class="rating">5.0 ★★★★★ <span class="rating-count">(10)</span></div>
+                            </div>
+                        </div>
+                        <div class="farmer-price">₹50 <span class="farmer-unit">/kg</span></div>
+                    </a>
+
+                    <a href="{{ url_for('seller_listing', product_id=product.id, seller_name='Suresh Singh') }}" class="farmer-card">
+                        <div class="farmer-info">
+                            <img src="{{ product.image }}" alt="Farmer" class="farmer-thumb">
+                            <div class="farmer-details">
+                                <h4>Suresh Singh</h4>
+                                <div class="rating">4.8 ★★★★★ <span class="rating-count">(24)</span></div>
+                            </div>
+                        </div>
+                        <div class="farmer-price">₹48 <span class="farmer-unit">/kg</span></div>
+                    </a>
+
+                    <a href="{{ url_for('seller_listing', product_id=product.id, seller_name='Anita Devi') }}" class="farmer-card">
+                        <div class="farmer-info">
+                            <img src="{{ product.image }}" alt="Farmer" class="farmer-thumb">
+                            <div class="farmer-details">
+                                <h4>Anita Devi</h4>
+                                <div class="rating">4.9 ★★★★★ <span class="rating-count">(16)</span></div>
+                            </div>
+                        </div>
+                        <div class="farmer-price">₹52 <span class="farmer-unit">/kg</span></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
